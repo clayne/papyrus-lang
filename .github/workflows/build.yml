@@ -10,6 +10,8 @@ jobs:
     runs-on: windows-latest
     env:
       CAKE_SETTINGS_ENABLESCRIPTCACHE: true
+      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
 
     steps:
       - name: git credentials
@@ -23,21 +25,17 @@ jobs:
         run: |
           git clone --single-branch --branch $("${{ github.ref }}".Replace('refs/heads/', '')) ${{ github.server_url }}/${{ github.repository }}.git repo
 
-      - name: Setup vcpkg
-        working-directory: c:/
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg
-          bootstrap-vcpkg.bat
-          vcpkg.exe integrate install
+      - uses: lukka/get-cmake@latest
 
-      - name: Cache vcpkg packages
-        uses: actions/cache@v3
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v7
         with:
-          path: c:/repo/vcpkg_installed
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('c:/repo/vcpkg.json') }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Cache nuget packages
         uses: actions/cache@v3

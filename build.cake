@@ -70,7 +70,8 @@ public void UpdatePyroCli()
     }).Wait();
 }
 
-public void DownloadCompilers() {
+public void DownloadCompilers()
+{
     if (!ShouldContinueWithDownload(Directory("dependencies/compilers")))
     {
         return;
@@ -93,20 +94,21 @@ public void NpmScript(string scriptName)
 
 // As much as the idea of a task with side effects grosses me out, meh...
 Task("get-version")
-    .Does(() => {
+    .Does(() =>
+    {
         if (isPrerelease)
         {
             // Generate a correctly sortable and valid semver based on the current date and time.
             var now = DateTime.UtcNow;
             var secondOfDay = (((now.Hour * 60) + now.Minute) * 60) + now.Second;
-            
+
             // Adding 200 due to the previous incorrect versioning scheme that, while invalid, may still be sorted by
             // something (VS marketplace, maybe? Don't really feel like finding out.)
             version = $"{now.Year}.{now.DayOfYear + 200}.{secondOfDay}";
-            
+
             return;
         }
-        
+
         Information("Getting version from semantic-release...");
 
         var done = false;
@@ -131,7 +133,8 @@ Task("get-version")
     });
 
 Task("npm-install")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmInstall(new NpmInstallSettings()
         {
             WorkingDirectory = "src/papyrus-lang-vscode",
@@ -139,7 +142,8 @@ Task("npm-install")
     });
 
 Task("npm-ci")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmCi(new NpmCiSettings()
         {
             WorkingDirectory = "src/papyrus-lang-vscode",
@@ -147,7 +151,8 @@ Task("npm-ci")
     });
 
 Task("npm-copy-bin")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmRunScript(new NpmRunScriptSettings()
         {
             ScriptName = "copy-bin",
@@ -156,7 +161,8 @@ Task("npm-copy-bin")
     });
 
 Task("npm-copy-debug-bin")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmRunScript(new NpmRunScriptSettings()
         {
             ScriptName = "copy-debug-bin",
@@ -165,7 +171,8 @@ Task("npm-copy-debug-bin")
     });
 
 Task("npm-clean")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmRunScript(new NpmRunScriptSettings()
         {
             ScriptName = "clean",
@@ -174,7 +181,8 @@ Task("npm-clean")
     });
 
 Task("npm-build")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmRunScript(new NpmRunScriptSettings()
         {
             ScriptName = isRelease ? "compile:release" : "compile",
@@ -183,12 +191,13 @@ Task("npm-build")
     });
 
 Task("npm-publish")
-    .Does(() => {
+    .Does(() =>
+    {
         NpmRunScript(new NpmRunScriptSettings()
         {
             ScriptName = "semantic-release",
             WorkingDirectory = "src/papyrus-lang-vscode",
-            EnvironmentVariables = 
+            EnvironmentVariables =
             {
                 // TODO: Something not terrible.
                 { "PRERELEASE_FLAG", isPrerelease ? "--pre-release" : " " },
@@ -199,12 +208,14 @@ Task("npm-publish")
     });
 
 Task("download-compilers")
-    .Does(() => {
+    .Does(() =>
+    {
         DownloadCompilers();
     });
 
 Task("copy-debug-plugin")
-    .Does(() => {
+    .Does(() =>
+    {
         try
         {
             CreateDirectory("./src/papyrus-lang-vscode/debug-plugin");
@@ -231,17 +242,20 @@ Task("copy-debug-plugin")
     });
 
 Task("download-pyro-cli")
-    .Does(() => {
+    .Does(() =>
+    {
         UpdatePyroCli();
     });
 
 Task("restore")
-    .Does(() => {
+    .Does(() =>
+    {
         NuGetRestore(solution);
     });
 
 Task("build-debugger")
-    .Does(() => {
+    .Does(() =>
+    {
         var parsedVersion = System.Version.Parse(version);
 
         var patch = parsedVersion.Build & 0xFFFF0000;
@@ -251,12 +265,12 @@ Task("build-debugger")
         {
             PlatformTarget = PlatformTarget.x64,
             Configuration = isRelease ? "Release" : "Debug",
-            Properties = 
+            Properties =
             {
                 { "VersionMajor", new List<string>(){ parsedVersion.Major.ToString() } },
                 { "VersionMinor", new List<string>(){ parsedVersion.Minor.ToString() } },
                 { "VersionPatch", new List<string>(){ patch.ToString() } },
-                { "VersionBuild", new List<string>(){ build.ToString() } },
+                { "VersionBuild", new List<string>(){ build.ToString() } }
             }
         });
 
@@ -293,7 +307,8 @@ Task("test")
     });
 
 Task("clean")
-    .Does(() => {
+    .Does(() =>
+    {
         CleanDirectories("./src/*/bin");
         CleanDirectories("./src/*/bin-debug");
         CleanDirectories("./src/*/obj");
