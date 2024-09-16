@@ -1,6 +1,6 @@
 import { TreeDataProviderBase } from '../../common/vscode/view/TreeDataProviderBase';
 import { TreeDataNode } from '../../common/vscode/view/TreeDataNode';
-import { TreeItem, TreeItemCollapsibleState, Uri, ExtensionContext } from 'vscode';
+import { TreeItem, TreeItemCollapsibleState, Uri, ExtensionContext, TreeItemLabel } from 'vscode';
 import { ILanguageClientManager } from '../../server/LanguageClientManager';
 import { Observable, combineLatest, Subscription } from 'rxjs';
 import { mergeMap, take } from 'rxjs/operators';
@@ -126,7 +126,12 @@ export class ProjectImportTreeDataNode implements TreeDataNode {
     }
 
     getTreeItem() {
-        return new TreeItem(Uri.file(this._scriptImport.fullPath), TreeItemCollapsibleState.Collapsed);
+        const folder = Uri.file(this._scriptImport.fullPath);
+        const reverseFolderPath = folder.path.split('/').reverse();
+        const importName = reverseFolderPath.find(x => x.toLocaleLowerCase() != 'source' && x.toLocaleLowerCase() != 'scripts') || "Unknown";
+        const folderName = reverseFolderPath[0];
+        const label = { label: `${importName}: ${folderName}`, highlights: [[0, importName?.length]] }
+        return new TreeItem(label as TreeItemLabel, TreeItemCollapsibleState.Collapsed);
     }
 
     async getChildren(): Promise<TreeDataNode[]> {
