@@ -22,6 +22,7 @@ export interface IPathResolver {
     getDebugToolPath(game: PapyrusGame): Promise<string>;
     getPyroCliPath(): Promise<string>;
     getPyroDirPath(): Promise<string>;
+    getPyroRemPath(): Promise<string>;
     getResourceDir(): Promise<string>;
     getWelcomeFile(): Promise<string>;
     // External paths
@@ -84,16 +85,20 @@ export class PathResolver implements IPathResolver {
         const toolGameName = getToolGameName(game);
         return this._asExtensionAbsolutePath(
             `./debug-bin/Debug/net472/DarkId.Papyrus.DebugAdapterProxy.${toolGameName}/` +
-                `DarkId.Papyrus.DebugAdapterProxy.${toolGameName}.exe`
+            `DarkId.Papyrus.DebugAdapterProxy.${toolGameName}.exe`
         );
     }
 
     public async getPyroCliPath(): Promise<string> {
-        return this._asExtensionAbsolutePath('./pyro/pyro.exe');
+        return path.join(await this.getPyroDirPath(), 'pyro.exe')
     }
 
     public async getPyroDirPath(): Promise<string> {
         return this._asExtensionAbsolutePath('./pyro');
+    }
+
+    public async getPyroRemPath(): Promise<string> {
+        return path.join(await this.getPyroDirPath(), 'remotes')
     }
 
     public async getResourceDir(): Promise<string> {
@@ -143,7 +148,7 @@ export class PathResolver implements IPathResolver {
         return config.modDirectoryPath;
     }
 
-    dispose() {}
+    dispose() { }
 }
 
 export const IPathResolver: interfaces.ServiceIdentifier<IPathResolver> = Symbol('pathResolver');

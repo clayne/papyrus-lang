@@ -16,6 +16,7 @@ namespace DarkId.Papyrus.Server
     public class ProjectProgramOptionsProvider : IProgramOptionsProvider
     {
         private readonly string _projectFlagsFileName;
+        private readonly string _remotesInstallPath;
         private readonly OmniSharp.Extensions.LanguageServer.Server.ILanguageServer _languageServer;
         private readonly IXmlProjectLocator _projectLocator;
         private readonly IXmlProjectLoader _projectLoader;
@@ -24,6 +25,7 @@ namespace DarkId.Papyrus.Server
 
         public ProjectProgramOptionsProvider(
             string projectFlagsFileName,
+            string remotesInstallPath,
             OmniSharp.Extensions.LanguageServer.Server.ILanguageServer languageServer,
             IXmlProjectLocator projectLocator,
             IXmlProjectLoader projectLoader,
@@ -31,6 +33,7 @@ namespace DarkId.Papyrus.Server
             ILogger<ProjectProgramOptionsProvider> logger)
         {
             _projectFlagsFileName = projectFlagsFileName;
+            _remotesInstallPath = remotesInstallPath;
             _languageServer = languageServer;
             _projectLocator = projectLocator;
             _projectLoader = projectLoader;
@@ -60,7 +63,7 @@ namespace DarkId.Papyrus.Server
                     try
                     {
                         var project = _projectLoader.LoadProject(projectPath).WaitForResult();
-                        return new Tuple<string, ProgramOptions>(projectPath, new ProgramOptionsBuilder().WithProject(project).Build());
+                        return new Tuple<string, ProgramOptions>(projectPath, new ProgramOptionsBuilder().WithRemotesInstallPath(_remotesInstallPath).WithProject(project).Build());
                     }
                     catch (Exception e)
                     {

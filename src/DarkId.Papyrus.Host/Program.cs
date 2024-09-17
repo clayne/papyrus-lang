@@ -33,6 +33,9 @@ namespace DarkId.Papyrus.Server.Host
 
         [Option("relativeIniPaths", Required = true)]
         public IEnumerable<string> RelativeIniPaths { get; set; }
+
+        [Option("remotesInstallPath", Required = true)]
+        public string RemotesInstallPath { get; set; }
     }
 
     public class Program
@@ -108,6 +111,7 @@ namespace DarkId.Papyrus.Server.Host
                     }
                 };
                 papyrusOptions.FlagsFileName = options.FlagsFileName;
+                papyrusOptions.RemotesInstallPath = options.RemotesInstallPath;
                 papyrusOptions.IniLocations = new CreationKitIniLocations()
                 {
                     CreationKitInstallPath = options.CreationKitInstallPath,

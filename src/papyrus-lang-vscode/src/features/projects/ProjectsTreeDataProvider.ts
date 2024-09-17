@@ -128,7 +128,7 @@ export class ProjectImportTreeDataNode implements TreeDataNode {
     getTreeItem() {
         const folder = Uri.file(this._scriptImport.fullPath);
         const reverseFolderPath = folder.path.split('/').reverse();
-        const importName = reverseFolderPath.find(x => x.toLocaleLowerCase() != 'source' && x.toLocaleLowerCase() != 'scripts') || "Unknown";
+        const importName = this._scriptImport.name;
         const folderName = reverseFolderPath[0];
         const label = { label: `${importName}: ${folderName}`, highlights: [[0, importName?.length]] }
         return new TreeItem(label as TreeItemLabel, TreeItemCollapsibleState.Collapsed);
