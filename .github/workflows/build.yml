@@ -23,6 +23,8 @@ jobs:
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: c:/repo
 
       - name: Export GitHub Actions cache environment variables
         uses: actions/github-script@v7
