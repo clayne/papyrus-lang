@@ -62,11 +62,7 @@ namespace DarkId.Papyrus.LanguageService.Program
         /// Non-informative paths that should not be included in `Name`
         /// </summary>
         private static readonly string[] _genericPaths = new[] { "scripts", "source" };
-        /// <summary>
-        /// The index of a segment in a repository URL's path which is its name
-        /// https://github.com/chesko256/Campfire/tree/master_fo4/Scripts/Source
-        /// </summary>
-        private static readonly int _repoNameIndex = 1;
+
         /// <summary>
         /// Name to display if none is found
         /// </summary>
@@ -80,14 +76,16 @@ namespace DarkId.Papyrus.LanguageService.Program
         /// <summary>
         /// Full system path to the import location. If set to URL, will instead resolve itself to equivalent system path.
         /// </summary>
-        public string Path 
-        { get => this._path; 
-          set
+        public string Path
+        {
+            get => this._path;
+            set
             {
                 // Process as remote if `value` is URI
                 Uri remoteAddress = null;
                 // We only process this if we aren't remote already
-                if (!IsRemote) {
+                if (!IsRemote)
+                {
                     this.IsRemote = Uri.TryCreate(value, UriKind.Absolute, out remoteAddress)
                     && (remoteAddress.Scheme == Uri.UriSchemeHttp || remoteAddress.Scheme == Uri.UriSchemeHttps);
                 }
@@ -95,8 +93,9 @@ namespace DarkId.Papyrus.LanguageService.Program
                 {
                     this._path = System.IO.Path.GetFullPath(value);
                     // Set `Name` to first non-generic folder name
-                    if(this.Name == null) this.Name = GetNameFromFilePath(value);
-                } else if (remoteAddress != null)
+                    if (this.Name == null) this.Name = GetNameFromFilePath(value);
+                }
+                else if (remoteAddress != null)
                 {
                     var remoteArgs = new RemoteArgs(remoteAddress);
                     // set `Name` based on remote's name
@@ -104,7 +103,7 @@ namespace DarkId.Papyrus.LanguageService.Program
 
                     // set file path as per Pyro's algorithm
                     this._path = System.IO.Path.GetFullPath(System.IO.Path.Combine(
-                        this.RemotesInstallPath, 
+                        this.RemotesInstallPath,
                         remoteArgs.UriHash,
                         remoteArgs.Owner,
                         remoteArgs.RepoName,
@@ -154,7 +153,7 @@ namespace DarkId.Papyrus.LanguageService.Program
             {
                 splitPath.RemoveAt(splitPath.Count - 1);
             }
-            
+
             // Return first non-generic folder name
             return splitPath.FindLast(folder => !_genericPaths.Contains(folder.ToLower()));
         }
@@ -219,11 +218,12 @@ namespace DarkId.Papyrus.LanguageService.Program
             /// <returns>true if it's a gitea path, false otherwise</returns>
             private bool isGiteaApiPath(string[] segments)
             {
-                if (TrimTrailingSlash(segments[1].ToLower()) == "api" 
+                if (TrimTrailingSlash(segments[1].ToLower()) == "api"
                     && TrimTrailingSlash(segments[2].ToLower()) == "v1")
                 {
                     return true;
-                } else
+                }
+                else
                 {
                     return false;
                 }
@@ -265,7 +265,8 @@ namespace DarkId.Papyrus.LanguageService.Program
 
                 // For some reason, we have to do it this way to match the hash
                 var sb = new StringBuilder();
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 4; i++)
+                {
                     sb.AppendFormat("{0:x2}", hashedRemote[i]);
                 }
                 UriHash = sb.ToString();
@@ -291,7 +292,8 @@ namespace DarkId.Papyrus.LanguageService.Program
                 if (segment.EndsWith("/"))
                 {
                     return segment.Substring(0, segment.Length - 1);
-                } else
+                }
+                else
                 {
                     return segment;
                 }

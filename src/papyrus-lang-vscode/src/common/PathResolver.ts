@@ -98,7 +98,7 @@ export class PathResolver implements IPathResolver {
     }
 
     public async getPyroRemPath(): Promise<string> {
-        return path.join(await this.getPyroDirPath(), 'remotes')
+        return path.join(await this.getPyroDirPath(), 'remote')
     }
 
     public async getResourceDir(): Promise<string> {
