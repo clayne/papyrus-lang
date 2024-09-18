@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DarkId.Papyrus.LanguageService.Program
 {
@@ -103,6 +104,7 @@ namespace DarkId.Papyrus.LanguageService.Program
                         remoteArgs.FilesPath
                         );
                 }
+                Console.WriteLine($"Initialized these source options: {this}");
             }
         }
         public bool Recursive { get; set; } = true;
@@ -134,6 +136,7 @@ namespace DarkId.Papyrus.LanguageService.Program
         /// <returns>Comprehensible name, or `Unknown` if none found</returns>
         private static string GetNameFromFilePath(string path)
         {
+            Console.WriteLine($"Analyzing {path}");
             var splitPath = path.Split(System.IO.Path.PathSeparator).ToList();
             if (!splitPath.Any())
             {
@@ -160,7 +163,12 @@ namespace DarkId.Papyrus.LanguageService.Program
             return uri.Segments.ElementAt(nameIndex);
         }
 
-        private class RemoteArgs
+        public override string ToString()
+        {
+            return $"Name: {Name}; Path: {Path}";
+        }
+
+        public class RemoteArgs
         {
             /// <summary>
             /// Repo's name (from the Uri)
@@ -198,34 +206,73 @@ namespace DarkId.Papyrus.LanguageService.Program
             private readonly Dictionary<string, int> _repoPathOffset = new Dictionary<string, int>()
             {
                 { "tree", 2 },
+                { "src", 2 },
                 { "contents", 1 },
                 { "default", 0 }
             };
+
+            /// <summary>
+            /// Regex string of the remote's host matches to the locations of the values in its segments
+            /// </summary>
+            private readonly Dictionary<string, RemoteInfoLocations> remoteParsers = new Dictionary<string, RemoteInfoLocations>()
+            {
+                { @"^github\.com", new RemoteInfoLocations(){ RemoteOwner = 1, RemoteName = 2, RemotePathStart = 5} },
+                { @"api\.github\.com", new RemoteInfoLocations(){ RemoteOwner = 2, RemoteName = 3, RemotePathStart = 5} },
+                { @"bitbucket\.org", new RemoteInfoLocations(){ RemoteOwner = 1, RemoteName = 2, RemotePathStart = 5} },
+                { @"bitbucket\.(?!org)", new RemoteInfoLocations(){ RemoteOwner = 2, RemoteName = 4, RemotePathStart = 6} },
+            };
+
+            private RemoteInfoLocations getRemoteInfoFromHost(string hostName)
+            {
+                foreach (var entry in remoteParsers)
+                {
+                    if (Regex.IsMatch(hostName, entry.Key)) return entry.Value;
+                }
+                throw new NotSupportedException($"{hostName} is a supported repository host.");
+            }
 
             public RemoteArgs(Uri remoteUri)
             {
                 RemoteUri = remoteUri;
 
                 // Pyro turns the URL into an 8-character SHA1 hash, so we do the same
-                var sha = new SHA1CryptoServiceProvider();
+                var sha = new SHA1Managed();
                 var hashedRemote = sha.ComputeHash(Encoding.UTF8.GetBytes(RemoteUri.OriginalString));
-                UriHash = Encoding.UTF8.GetString(hashedRemote).Take(8).ToString();
 
-                // Repositories usually have owner/reponame in their Uri, so we can parse that
+                // For some reason, we have to do it this way to match the hash
+                var sb = new StringBuilder();
+                for (int i = 0; i < 4; i++) {
+                    sb.AppendFormat("{0:x2}", hashedRemote[i]);
+                }
+                UriHash = sb.ToString();
+
+                var info = getRemoteInfoFromHost(RemoteUri.Host);
                 var segments = RemoteUri.Segments;
-                if (!_repoOwnerOffset.TryGetValue(segments[0].ToLower(), out var ownerIndex)) {
-                    ownerIndex = _repoOwnerOffset["default"];
-                }
-                Owner = segments[ownerIndex];
-                RepoName = segments[ownerIndex + 1];
 
-                // Skip to our paths
-                if (!_repoPathOffset.TryGetValue(segments[ownerIndex + 2].ToLower(), out var pathIndex))
+                Owner = TrimTrailingSlash(segments[info.RemoteOwner]);
+                RepoName = TrimTrailingSlash(segments[info.RemoteName]);
+                FilesPath = System.IO.Path.Combine(segments
+                    .Skip(info.RemotePathStart)
+                    .Select(segment => TrimTrailingSlash(segment))
+                    .ToArray());
+            }
+
+            private static string TrimTrailingSlash(string segment)
+            {
+                if (segment.EndsWith("/"))
                 {
-                    ownerIndex = _repoPathOffset["default"];
+                    return segment.Substring(0, segment.Length - 1);
+                } else
+                {
+                    return segment;
                 }
-                pathIndex += 2 + ownerIndex;
-                FilesPath = System.IO.Path.Combine(segments.Skip(pathIndex).ToArray());
+            }
+
+            private class RemoteInfoLocations
+            {
+                public int RemoteName { get; set; }
+                public int RemoteOwner { get; set; }
+                public int RemotePathStart { get; set; }
             }
         }
     }
