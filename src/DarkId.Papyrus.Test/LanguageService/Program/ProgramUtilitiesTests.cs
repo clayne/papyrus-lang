@@ -17,8 +17,10 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
     public class ProgramUtilitiesTests : ProgramTestBase
     {
         private readonly IFileSystem _fileSystem = new LocalFileSystem();
-        private readonly string _remotesPath = "temp";
-        private readonly string _remotesInfoPath = @"..\..\..\..\scripts\RemoteAddresses.json";
+        private readonly static string _remotesPath = "temp";
+        private readonly static string _remotesInfoPath = @"..\..\..\..\scripts\RemoteAddresses.json";
+        private readonly RemotesInfo remotes = 
+            JsonConvert.DeserializeObject<RemotesInfo>(File.ReadAllText(_remotesInfoPath));
 
         //[TestMethod]
         //public async Task ResolveSourceFiles_ShouldResolveFiles()
@@ -46,12 +48,40 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
         }
 
         [TestMethod]
-        public void ResolveSourceFiles_ReadsRemoteImport()
+        public void ResolveSourceFiles_ParsesRemoteUri()
         {
-            var remotes = JsonConvert.DeserializeObject<RemotesInfo>(File.ReadAllText(_remotesInfoPath));
             foreach (var remoteInfo in remotes.Remotes)
             {
                 TestRemoteParsing(remoteInfo);
+            }
+        }
+
+        private string RemoteInfoToPath(RemoteInfo remoteInfo)
+        {
+            return Path.GetFullPath(Path.Combine(
+                _remotesPath,
+                remoteInfo.RemoteHash,
+                remoteInfo.RemoteOwner,
+                remoteInfo.RemoteName,
+                remoteInfo.RemotePath));
+        }
+
+        private void TestRemoteResolving(RemoteInfo remoteInfo)
+        {
+            var include = new SourceInclude(remoteInfo.Remote, true, _remotesPath);
+
+            Assert.AreEqual(RemoteInfoToPath(remoteInfo), include.Path);
+            Assert.IsTrue(include.IsRemote);
+            Assert.IsTrue(include.IsImport);
+            Assert.AreEqual(remoteInfo.RemoteName, include.Name);
+        }
+
+        [TestMethod]
+        public void ResolveSourceFiles_ResolvesRemoteUri()
+        {
+            foreach (var remoteInfo in remotes.Remotes)
+            {
+                TestRemoteResolving(remoteInfo);
             }
         }
         //[TestMethod]

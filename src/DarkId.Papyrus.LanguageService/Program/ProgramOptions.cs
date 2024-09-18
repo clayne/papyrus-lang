@@ -86,7 +86,7 @@ namespace DarkId.Papyrus.LanguageService.Program
                     && (remoteAddress.Scheme == Uri.UriSchemeHttp || remoteAddress.Scheme == Uri.UriSchemeHttps);
                 if (!IsRemote)
                 {
-                    this._path = value;
+                    this._path = System.IO.Path.GetFullPath(value);
                     // Set `Name` to first non-generic folder name
                     this.Name = GetNameFromFilePath(value);
                 } else
@@ -96,15 +96,14 @@ namespace DarkId.Papyrus.LanguageService.Program
                     this.Name = remoteArgs.RepoName;
 
                     // set file path as per Pyro's algorithm
-                    this._path = System.IO.Path.Combine(
+                    this._path = System.IO.Path.GetFullPath(System.IO.Path.Combine(
                         this.RemotesInstallPath, 
                         remoteArgs.UriHash,
                         remoteArgs.Owner,
                         remoteArgs.RepoName,
                         remoteArgs.FilesPath
-                        );
+                        ));
                 }
-                Console.WriteLine($"Initialized these source options: {this}");
             }
         }
         public bool Recursive { get; set; } = true;
