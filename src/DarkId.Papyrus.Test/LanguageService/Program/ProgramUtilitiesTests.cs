@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DarkId.Papyrus.Test.LanguageService.Program
 {
@@ -17,24 +18,16 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
     public class ProgramUtilitiesTests : ProgramTestBase
     {
         private readonly IFileSystem _fileSystem = new LocalFileSystem();
-        private readonly static string _remotesPath = "temp";
-        private readonly static string _remotesInfoPath = @"..\..\..\..\scripts\RemoteAddresses.json";
+        private readonly static string _testFilesPath = @"..\..\..\..";
+
+        private readonly static string _remotesPath = Path.Combine(_testFilesPath, "remotes");
+        private readonly static string _remotesInfoPath = Path.Combine(_testFilesPath, @"scripts\RemoteAddresses.json");
         private readonly RemotesInfo remotes = 
             JsonConvert.DeserializeObject<RemotesInfo>(File.ReadAllText(_remotesInfoPath));
 
-        //[TestMethod]
-        //public async Task ResolveSourceFiles_ShouldResolveFiles()
-        //{
-        //    var project = await new FileSystemXmlProjectLoader(_fileSystem, new XmlProjectDeserializer())
-        //        .LoadProject("../../../../scripts/Fallout 4/Fallout4.ppj");
+        private readonly static string _importsInfoPath = Path.Combine(_testFilesPath, @"scripts\Imports.json");
+        private readonly static ImportsInfo imports = JsonConvert.DeserializeObject<ImportsInfo>(File.ReadAllText(_importsInfoPath));
 
-        //    var programOptionsBuilder = new ProgramOptionsBuilder();
-        //    var programOptions = programOptionsBuilder.WithProject(project).Build();
-
-        //    var projectSourceFiles = await _fileSystem.ResolveSourceFiles(programOptions.Sources);
-
-        //    // TODO: Assertion
-        //}
         private void TestRemoteParsing(RemoteInfo remoteInfo)
         {
             var remoteUri = new Uri(remoteInfo.Remote);
@@ -84,21 +77,73 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
                 TestRemoteResolving(remoteInfo);
             }
         }
-        //[TestMethod]
-        //public async Task ResolveSourceFiles_ResolvesRemoteImport()
-        //{
-        //    var project = await new FileSystemXmlProjectLoader(_fileSystem, new XmlProjectDeserializer())
-        //        .LoadProject("../../../../scripts/Skyrim/Skyrim_3.ppj");
 
-        //    var builder = new ProgramOptionsBuilder();
-        //    var programOptions = builder.WithRemotesInstallPath(_remotesPath).WithProject(project).Build();
+        private void AssertInclude(SourceInclude include, ImportInfo truth)
+        {
+            Assert.AreEqual(truth.Name, include.Name);
+            Assert.AreEqual(Path.GetFullPath(Path.Combine(_testFilesPath, truth.Path)), include.Path);
+        }
 
-        //    Assert.AreEqual(programOptions.RemotesInstallPath, _remotesPath);
+        [TestMethod]
+        public async Task ResolveSourceFiles_ResolvesRemoteImport()
+        {
+            var project = await new FileSystemXmlProjectLoader(_fileSystem, new XmlProjectDeserializer())
+                .LoadProject(Path.Combine(_testFilesPath, "scripts/Skyrim/Skyrim_3.ppj"));
 
-        //    Assert.IsTrue(programOptions.Sources.Includes.Count > 1);
+            var builder = new ProgramOptionsBuilder();
+            var programOptions = builder.WithRemotesInstallPath(_remotesPath).WithProject(project).Build();
 
-        //    // TODO: properly test whether the Uri can retrieve scripts from a temp path
-        //}
+            Assert.AreEqual("Skyrim_3", programOptions.Name);
+            Assert.AreEqual(_remotesPath, programOptions.RemotesInstallPath);
+            Assert.AreEqual("TESV_Papyrus_Flags.flg", programOptions.FlagsFileName);
+
+            var includes = programOptions.Sources.Includes;
+            includes.Reverse();
+
+            Assert.IsTrue(includes.Count == (imports.Imports.Count() + 1));
+
+            // Skip the default import (Skyrim)
+            for (int i = 0; i < imports.Imports.Count(); i++)
+            {
+                AssertInclude(includes[i + 1], imports.Imports.ElementAt(i));
+            }
+
+            var program = ServiceProvider.CreateInstance<PapyrusProgram>(programOptions);
+            var resolved = await program.ResolveSources();
+
+            // Structured as follows:
+            // { importName: { scriptFile: scriptFullPath } }
+            var allResolvedScripts = new Dictionary<string, Dictionary<string, string>>();
+
+            foreach (var source in resolved)
+            {
+                allResolvedScripts
+                    .Add(source.Key.Name,
+                        source.Value.Select(pathIdentifier => new KeyValuePair<string, string>(pathIdentifier.Key.ToScriptFilePath().Substring(1), pathIdentifier.Value)).ToDictionary());
+            }
+
+            // Structured same as above
+            var allImports = new Dictionary<string, Dictionary<string, string>>();
+
+            foreach (var import in imports.Imports)
+            {
+                allImports.Add(import.Name, import.Scripts.Select(script => new KeyValuePair<string, string>(script, Path.GetFullPath(Path.Combine(_testFilesPath, import.Path, script)))).ToDictionary());
+                
+            }
+
+            foreach (var import in allImports)
+            {
+                Assert.IsTrue(allResolvedScripts.ContainsKey(import.Key), $"Import with name {import.Key} has not been resolved");
+                // { scriptFile: scriptFullPath }
+                // From the program
+                var resolvedScripts = allResolvedScripts[import.Key];
+                foreach (var script in import.Value)
+                {
+                    Assert.IsTrue(resolvedScripts.ContainsKey(script.Key), $"Script {script.Key} has not been resolved.");
+                    Assert.AreEqual(script.Value, resolvedScripts[script.Key], $"Script {script.Key} has incorrect file path.");
+                }
+            }
+        }
         private class RemotesInfo
         {
             public IEnumerable<RemoteInfo> Remotes { get; set; } = new List<RemoteInfo>();
@@ -110,6 +155,18 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
             public string RemoteName { get; set; }
             public string RemoteOwner { get; set; }
             public string RemotePath { get; set; }
+        }
+
+        private class ImportsInfo
+        {
+            public IEnumerable<ImportInfo> Imports { get; set; } = new List<ImportInfo>();
+        }
+
+        private class ImportInfo
+        {
+            public string Name { get; set;}
+            public string Path { get; set; }
+            public IEnumerable<string> Scripts = new List<string>();
         }
     }
 }

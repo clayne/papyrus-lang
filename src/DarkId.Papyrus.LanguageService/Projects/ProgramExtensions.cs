@@ -18,19 +18,18 @@ namespace DarkId.Papyrus.LanguageService.Projects
             builder.WithName(Path.GetFileNameWithoutExtension(projectInfo.ProjectFile))
                 .WithFlagsFileName(projectInfo.Project.Flags)
                 .WithSourceIncludes(
-                    projectInfo.Project.Imports.Where(i => !i.StartsWith("http", StringComparison.OrdinalIgnoreCase)).Reverse().Select(import => new SourceInclude()
+                    projectInfo.Project.Imports.Reverse().Select(import => 
+                    import.StartsWith("http")
+                    ? new SourceInclude(
+                                path: import,
+                                isImport: true,
+                                remotesInstallPath: builder.Build().RemotesInstallPath
+                    )
+                    : new SourceInclude()
                     {
                         IsImport = true,
                         Path = Path.GetFullPath(Path.Combine(projectFileDirectory, PathUtilities.Normalize(import)))
                     })
-                )
-                .WithSourceIncludes(
-                    projectInfo.Project.Imports.Where(i => i.StartsWith("http", StringComparison.OrdinalIgnoreCase)).Reverse().Select(import => new SourceInclude(
-                                path: import,
-                                isImport: true,
-                                remotesInstallPath: builder.Build().RemotesInstallPath
-                        )
-                    )
                 );
 
             if (projectInfo.Project.Folders != null && projectInfo.Project.Folders.Length > 0)

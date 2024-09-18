@@ -56,6 +56,11 @@
     <ProjectReference Include="..\DarkId.Papyrus.LanguageService\DarkId.Papyrus.LanguageService.Skyrim.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="scripts\TestSourceFolders\" />
+    <Folder Include="scripts\TestSource\" />
+  </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

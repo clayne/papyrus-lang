@@ -76,24 +76,31 @@ namespace DarkId.Papyrus.LanguageService.Program
         /// Name of this import (to appear in Project Explorer)
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Full system path to the import location. If set to URL, will instead resolve itself to equivalent system path.
+        /// </summary>
         public string Path 
         { get => this._path; 
           set
             {
                 // Process as remote if `value` is URI
-                Uri remoteAddress;
-                this.IsRemote = Uri.TryCreate(value, UriKind.Absolute, out remoteAddress)
+                Uri remoteAddress = null;
+                // We only process this if we aren't remote already
+                if (!IsRemote) {
+                    this.IsRemote = Uri.TryCreate(value, UriKind.Absolute, out remoteAddress)
                     && (remoteAddress.Scheme == Uri.UriSchemeHttp || remoteAddress.Scheme == Uri.UriSchemeHttps);
+                }
                 if (!IsRemote)
                 {
                     this._path = System.IO.Path.GetFullPath(value);
                     // Set `Name` to first non-generic folder name
-                    this.Name = GetNameFromFilePath(value);
-                } else
+                    if(this.Name == null) this.Name = GetNameFromFilePath(value);
+                } else if (remoteAddress != null)
                 {
                     var remoteArgs = new RemoteArgs(remoteAddress);
                     // set `Name` based on remote's name
-                    this.Name = remoteArgs.RepoName;
+                    if (this.Name == null) this.Name = remoteArgs.RepoName;
 
                     // set file path as per Pyro's algorithm
                     this._path = System.IO.Path.GetFullPath(System.IO.Path.Combine(
@@ -135,13 +142,19 @@ namespace DarkId.Papyrus.LanguageService.Program
         /// <returns>Comprehensible name, or `Unknown` if none found</returns>
         private static string GetNameFromFilePath(string path)
         {
-            Console.WriteLine($"Analyzing {path}");
-            var splitPath = path.Split(System.IO.Path.PathSeparator).ToList();
+            FileAttributes attributes = File.GetAttributes(path);
+            var splitPath = path.Split(System.IO.Path.DirectorySeparatorChar).ToList();
             if (!splitPath.Any())
             {
                 return _defaultName;
             }
-            splitPath.RemoveAt(splitPath.Count - 1);
+
+            // remove trailing file
+            if ((attributes & FileAttributes.Directory) != FileAttributes.Directory)
+            {
+                splitPath.RemoveAt(splitPath.Count - 1);
+            }
+            
             // Return first non-generic folder name
             return splitPath.FindLast(folder => !_genericPaths.Contains(folder.ToLower()));
         }
