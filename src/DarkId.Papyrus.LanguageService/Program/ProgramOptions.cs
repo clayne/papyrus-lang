@@ -147,27 +147,14 @@ namespace DarkId.Papyrus.LanguageService.Program
             return splitPath.FindLast(folder => !_genericPaths.Contains(folder.ToLower()));
         }
 
-        /// <summary>
-        /// Gets human-readable name of Include from give `URI`
-        /// </summary>
-        /// <param name="uri">The GitHub or Bitbucket remote Uri</param>
-        /// <returns>The name of the repo from its Uri</returns>
-        private static string GetNameFromRemoteUri(Uri uri)
-        {
-            // Example address will look like this:
-            // https://github.com/chesko256/Campfire/tree/master_fo4/Scripts/Source
-            // or this:
-            // https://api.github.com/repos/chesko256/Campfire/contents/Scripts/Source?ref=master_fo4
-            var nameIndex = _repoNameIndex;
-            if (uri.Segments[0].ToLower() == "repos") nameIndex += 1;
-            return uri.Segments.ElementAt(nameIndex);
-        }
-
         public override string ToString()
         {
             return $"Name: {Name}; Path: {Path}";
         }
 
+        /// <summary>
+        /// Extracts all required data from a remote's <see cref="Uri"/>
+        /// </summary>
         public class RemoteArgs
         {
             /// <summary>
@@ -192,45 +179,70 @@ namespace DarkId.Papyrus.LanguageService.Program
             public string FilesPath { get; set; }
 
             /// <summary>
-            /// How much the repo owner is offset among the Uri's path segments
-            /// </summary>
-            private readonly Dictionary<string, int> _repoOwnerOffset = new Dictionary<string, int>()
-            {
-                { "repos", 1 },
-                { "default", 0 }
-            };
-
-            /// <summary>
-            /// How much the include paths are offset among the Uri's path segments
-            /// </summary>
-            private readonly Dictionary<string, int> _repoPathOffset = new Dictionary<string, int>()
-            {
-                { "tree", 2 },
-                { "src", 2 },
-                { "contents", 1 },
-                { "default", 0 }
-            };
-
-            /// <summary>
             /// Regex string of the remote's host matches to the locations of the values in its segments
             /// </summary>
             private readonly Dictionary<string, RemoteInfoLocations> remoteParsers = new Dictionary<string, RemoteInfoLocations>()
             {
                 { @"^github\.com", new RemoteInfoLocations(){ RemoteOwner = 1, RemoteName = 2, RemotePathStart = 5} },
                 { @"api\.github\.com", new RemoteInfoLocations(){ RemoteOwner = 2, RemoteName = 3, RemotePathStart = 5} },
-                { @"bitbucket\.org", new RemoteInfoLocations(){ RemoteOwner = 1, RemoteName = 2, RemotePathStart = 5} },
-                { @"bitbucket\.(?!org)", new RemoteInfoLocations(){ RemoteOwner = 2, RemoteName = 4, RemotePathStart = 6} },
+                { @"^bitbucket\.org", new RemoteInfoLocations(){ RemoteOwner = 1, RemoteName = 2, RemotePathStart = 5} },
+                { @"^api\.bitbucket\.org", new RemoteInfoLocations(){ RemoteOwner = 3, RemoteName = 4, RemotePathStart = 7} },
+                { @"^bitbucket\.(?!org)", new RemoteInfoLocations(){ RemoteOwner = 2, RemoteName = 4, RemotePathStart = 6} }
             };
 
-            private RemoteInfoLocations getRemoteInfoFromHost(string hostName)
+            /// <summary>
+            /// How much to offset the gitea values if it's an api call
+            /// </summary>
+            private readonly int _giteaApiOffset = 3;
+
+            /// <summary>
+            /// Gitea is self-hosted, so this will be used if no other matches hit
+            /// </summary>
+            private readonly RemoteInfoLocations _giteaInfo = new RemoteInfoLocations() { RemoteOwner = 1, RemoteName = 2, RemotePathStart = 6 };
+
+            /// <summary>
+            /// Check whether a Url path is a gitea Api path
+            /// </summary>
+            /// <param name="segments">Segments of the Uri's path</param>
+            /// <returns>true if it's a gitea path, false otherwise</returns>
+            private bool isGiteaApiPath(string[] segments)
+            {
+                if (TrimTrailingSlash(segments[1].ToLower()) == "api" 
+                    && TrimTrailingSlash(segments[2].ToLower()) == "v1")
+                {
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+
+            /// <summary>
+            /// Checks <paramref name="hostName"/> against <see cref="remoteParsers"/> and returns data locations in the corresponding Uri
+            /// </summary>
+            /// <param name="hostName">The hostname from the Uri to process</param>
+            /// <returns>Indices of locations of info in Uri's path corresponding to the hostname, or the Gitea one by default</returns>
+            private RemoteInfoLocations getRemoteInfoFromUri(Uri remoteUri)
             {
                 foreach (var entry in remoteParsers)
                 {
-                    if (Regex.IsMatch(hostName, entry.Key)) return entry.Value;
+                    if (Regex.IsMatch(remoteUri.Host, entry.Key)) return entry.Value;
                 }
-                throw new NotSupportedException($"{hostName} is a supported repository host.");
+                var giteaInfo = _giteaInfo;
+                if (isGiteaApiPath(remoteUri.Segments))
+                {
+                    foreach (var property in typeof(RemoteInfoLocations).GetProperties())
+                    {
+                        property.SetValue(giteaInfo, Convert.ToInt32(property.GetValue(giteaInfo)) + _giteaApiOffset);
+                    }
+                }
+                return giteaInfo;
             }
 
+            /// <summary>
+            /// Takes a remote's <see cref="Uri"/> and populates its fields
+            /// </summary>
+            /// <param name="remoteUri"><see cref="Uri"/> of Pyro-compatible remote</param>
             public RemoteArgs(Uri remoteUri)
             {
                 RemoteUri = remoteUri;
@@ -246,7 +258,7 @@ namespace DarkId.Papyrus.LanguageService.Program
                 }
                 UriHash = sb.ToString();
 
-                var info = getRemoteInfoFromHost(RemoteUri.Host);
+                var info = getRemoteInfoFromUri(RemoteUri);
                 var segments = RemoteUri.Segments;
 
                 Owner = TrimTrailingSlash(segments[info.RemoteOwner]);
@@ -257,6 +269,11 @@ namespace DarkId.Papyrus.LanguageService.Program
                     .ToArray());
             }
 
+            /// <summary>
+            /// Removes a single / at the end of a string
+            /// </summary>
+            /// <param name="segment">string to process</param>
+            /// <returns><paramref name="segment"/> without the trailing /</returns>
             private static string TrimTrailingSlash(string segment)
             {
                 if (segment.EndsWith("/"))
@@ -268,6 +285,9 @@ namespace DarkId.Papyrus.LanguageService.Program
                 }
             }
 
+            /// <summary>
+            /// Collection of indices to use on a <see cref="Uri.Segments"/> to extract the corresponding values. <see cref="RemotePathStart"/> assumes that the end of the path is the file path.
+            /// </summary>
             private class RemoteInfoLocations
             {
                 public int RemoteName { get; set; }
