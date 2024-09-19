@@ -28,6 +28,4 @@ Updated frequently with new features and improvements.
 - rjstone
 - fireundubh (for Pyro)
 - Nyo (Pyro fixes)
-
-<a target="_blank" href="https://icons8.com/icon/0HyDNss5DL1B/git">Git</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
-<a target="_blank" href="https://icons8.com/icon/5nzoHCbP0E0i/folder">Folder</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+- [Git](https://icons8.com/icon/0HyDNss5DL1B/git) and [Folder](https://icons8.com/icon/5nzoHCbP0E0i/folder) icons by [Icons8](https://icons8.com)
