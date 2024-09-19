@@ -31,6 +31,7 @@
     {
       "Name": "skyui",
       "Path": "remotes\\5738ebf4\\fireundubh\\skyui\\dist\\Data\\Scripts\\Source",
+      "IsRemote": true,
       "Scripts": [
         "SKI_ActiveEffectsWidget.psc",
         "SKI_ConfigBase.psc",

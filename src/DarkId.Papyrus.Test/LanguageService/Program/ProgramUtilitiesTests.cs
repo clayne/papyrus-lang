@@ -82,6 +82,10 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
         {
             Assert.AreEqual(truth.Name, include.Name);
             Assert.AreEqual(Path.GetFullPath(Path.Combine(_testFilesPath, truth.Path)), include.Path);
+            if (truth.IsRemote != null)
+            {
+                Assert.AreEqual(truth.IsRemote, include.IsRemote);
+            }
         }
 
         [TestMethod]
@@ -167,6 +171,7 @@ namespace DarkId.Papyrus.Test.LanguageService.Program
             public string Name { get; set;}
             public string Path { get; set; }
             public IEnumerable<string> Scripts = new List<string>();
+            public bool? IsRemote { get; set; }
         }
     }
 }

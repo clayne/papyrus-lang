@@ -55,6 +55,7 @@ namespace DarkId.Papyrus.Server.Features
                                 Name = include.Key.Name,
                                 FullPath = include.Key.Path,
                                 IsImport = include.Key.IsImport,
+                                IsRemote = include.Key.IsRemote,
                                 Scripts = new Container<ProjectInfoScript>(include.Value.Select(script => new ProjectInfoScript()
                                 {
                                     Identifier = script.Key,

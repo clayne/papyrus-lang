@@ -131,7 +131,10 @@ export class ProjectImportTreeDataNode implements TreeDataNode {
         const importName = this._scriptImport.name;
         const folderName = reverseFolderPath[0];
         const label = { label: `${importName}: ${folderName}`, highlights: [[0, importName?.length]] }
-        return new TreeItem(label as TreeItemLabel, TreeItemCollapsibleState.Collapsed);
+        const treeItem = new TreeItem(label as TreeItemLabel, TreeItemCollapsibleState.Collapsed);
+        if (this._scriptImport.isRemote) treeItem.iconPath = this._context.asAbsolutePath('resources/icons8-git.svg');
+        else treeItem.iconPath = this._context.asAbsolutePath('resources/icons8-folder.svg');
+        return treeItem;
     }
 
     async getChildren(): Promise<TreeDataNode[]> {
