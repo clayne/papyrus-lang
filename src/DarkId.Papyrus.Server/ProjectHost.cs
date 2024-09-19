@@ -84,7 +84,7 @@ namespace DarkId.Papyrus.Server
                         _logger.LogInformation($"\t\tLoaded {scriptCount} scripts");
                     } else
                     {
-                        _logger.LogInformation("\t\tNo scripts found! This is a problem.");
+                        _logger.LogInformation("\t\tNo scripts found! If your .ppj Imports include remotes (i.e. links to git repositories), you must run Pyro to download them.");
                     }
                 }
                 _logger.LogInformation("Done");
