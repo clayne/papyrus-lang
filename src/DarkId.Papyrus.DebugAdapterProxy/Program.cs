@@ -53,6 +53,8 @@ namespace DarkId.Papyrus.DebugAdapterProxy
 
         [Option("clientProcessId")]
         public int ClientProcessId { get; set; }
+        [Option("remotesInstallPath")]
+        public string RemotesInstallPath { get; set; }
     }
 
     class Program
@@ -126,7 +128,10 @@ namespace DarkId.Papyrus.DebugAdapterProxy
                 var projectLoader = new FileSystemXmlProjectLoader(fileSystem, projectDeserializer);
                 var project = await projectLoader.LoadProject(options.ProjectPath);
 
-                var programOptions = new ProgramOptionsBuilder().WithProject(project).Build();
+                var programOptions = new ProgramOptionsBuilder()
+                    .WithRemotesInstallPath(options.RemotesInstallPath)
+                    .WithProject(project)
+                    .Build();
                 var includes = await fileSystem.ResolveSourceFileIncludes(programOptions.Sources);
                 return includes.FlattenIncludes();
             }

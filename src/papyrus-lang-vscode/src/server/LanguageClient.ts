@@ -24,6 +24,7 @@ export interface IToolArguments {
     defaultAdditionalImports?: string;
     creationKitInstallPath: string;
     relativeIniPaths: string[];
+    remotesInstallPath: string;
 }
 
 export interface ILanguageClient {

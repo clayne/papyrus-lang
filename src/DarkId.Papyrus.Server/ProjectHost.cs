@@ -75,6 +75,18 @@ namespace DarkId.Papyrus.Server
                 _logger.LogInformation("Resolving script files for {0}...", Name);
                 Sources = _program.ResolveSources().WaitForResult();
 
+                foreach (var source in Sources)
+                {
+                    _logger.LogInformation($"Found import {source.Key.Name} with path {source.Key.Path}");
+                    var scriptCount = source.Value.Count;
+                    if (scriptCount > 0)
+                    {
+                        _logger.LogInformation($"\t\tLoaded {scriptCount} scripts");
+                    } else
+                    {
+                        _logger.LogInformation("\t\tNo scripts found! This is a problem.");
+                    }
+                }
                 _logger.LogInformation("Done");
             }
         }
