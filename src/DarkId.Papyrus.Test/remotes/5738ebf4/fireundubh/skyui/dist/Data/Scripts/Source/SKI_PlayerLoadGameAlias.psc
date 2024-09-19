@@ -1,7 +1,4 @@
-scriptname SKI_PlayerLoadGameAlias extends ReferenceAlias
-
- ; EVENTS -----------------------------------------------------------------------------------------
-
-event OnPlayerLoadGame()
-	(GetOwningQuest() as SKI_QuestBase).OnGameReload()
-endEvent
+scriptname ski_playerloadgamealias extends referencealias
+event onplayerloadgame()
+endevent
+;This file was cleaned with PapyrusSourceHeadliner 1
