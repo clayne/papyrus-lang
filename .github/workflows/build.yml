@@ -93,7 +93,7 @@ jobs:
           dotnet cake
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
+          VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
           # TODO: Rename this stuff for clarity once release build artifacts are being created
           # TODO: Cleanup workflows for various event types in general
           RELEASE: ${{( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/prerelease') && github.event_name != 'pull_request' && github.event_name != 'pull_request_target' }}
