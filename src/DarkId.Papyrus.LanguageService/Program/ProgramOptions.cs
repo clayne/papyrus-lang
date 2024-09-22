@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Text;
+using System.Web;
 using System.Text.RegularExpressions;
 
 namespace DarkId.Papyrus.LanguageService.Program
@@ -218,8 +219,8 @@ namespace DarkId.Papyrus.LanguageService.Program
             /// <returns>true if it's a gitea path, false otherwise</returns>
             private bool isGiteaApiPath(string[] segments)
             {
-                if (TrimTrailingSlash(segments[1].ToLower()) == "api"
-                    && TrimTrailingSlash(segments[2].ToLower()) == "v1")
+                if (FormatSegment(segments[1].ToLower()) == "api"
+                    && FormatSegment(segments[2].ToLower()) == "v1")
                 {
                     return true;
                 }
@@ -274,11 +275,11 @@ namespace DarkId.Papyrus.LanguageService.Program
                 var info = getRemoteInfoFromUri(RemoteUri);
                 var segments = RemoteUri.Segments;
 
-                Owner = TrimTrailingSlash(segments[info.RemoteOwner]);
-                RepoName = TrimTrailingSlash(segments[info.RemoteName]);
+                Owner = FormatSegment(segments[info.RemoteOwner]);
+                RepoName = FormatSegment(segments[info.RemoteName]);
                 FilesPath = System.IO.Path.Combine(segments
                     .Skip(info.RemotePathStart)
-                    .Select(segment => TrimTrailingSlash(segment))
+                    .Select(segment => FormatSegment(segment))
                     .ToArray());
             }
 
@@ -287,16 +288,18 @@ namespace DarkId.Papyrus.LanguageService.Program
             /// </summary>
             /// <param name="segment">string to process</param>
             /// <returns><paramref name="segment"/> without the trailing /</returns>
-            private static string TrimTrailingSlash(string segment)
+            private static string FormatSegment(string segment)
             {
+                string result;
                 if (segment.EndsWith("/"))
                 {
-                    return segment.Substring(0, segment.Length - 1);
+                    result = segment.Substring(0, segment.Length - 1);
                 }
                 else
                 {
-                    return segment;
+                    result = segment;
                 }
+                return HttpUtility.UrlDecode(result);
             }
 
             /// <summary>

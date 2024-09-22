@@ -8,6 +8,13 @@
       "RemotePath": "dist\\Data\\Scripts\\Source"
     },
     {
+      "Remote": "https://github.com/fire%20undubh/sky%20ui/tree/master/dist/Da%20ta/Scripts/Source",
+      "RemoteHash": "60cfcb8a",
+      "RemoteName": "sky ui",
+      "RemoteOwner": "fire undubh",
+      "RemotePath": "dist\\Da ta\\Scripts\\Source"
+    },
+    {
       "Remote": "https://api.github.com/repos/fireundubh/skyui/contents/dist/Data/Scripts/Source?ref=master",
       "RemoteHash": "9056089a",
       "RemoteName": "skyui",
