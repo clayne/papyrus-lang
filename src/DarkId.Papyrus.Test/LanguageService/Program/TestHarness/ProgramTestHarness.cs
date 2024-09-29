@@ -33,7 +33,7 @@ namespace DarkId.Papyrus.Test.LanguageService.Program.TestHarness
             }
         }
 
-        private readonly static IServiceProvider _serviceProvider;
+        public readonly static IServiceProvider serviceProvider;
 
         static ProgramTestHarness()
         {
@@ -58,17 +58,17 @@ namespace DarkId.Papyrus.Test.LanguageService.Program.TestHarness
 #endif
                         new CreationKitConfig()));
 
-            _serviceProvider = serviceCollection.BuildServiceProvider();
+            serviceProvider = serviceCollection.BuildServiceProvider();
 
             HarmonyPatches.Apply();
         }
 
         public static PapyrusProgram CreateProgram()
         {
-            var programOptionsProvider = _serviceProvider.GetService<CreationKitProgramOptionsProvider>();
+            var programOptionsProvider = serviceProvider.GetService<CreationKitProgramOptionsProvider>();
             var options = programOptionsProvider.GetAmbientProgramOptions();
 
-            return _serviceProvider.CreateInstance<PapyrusProgram>(options);
+            return serviceProvider.CreateInstance<PapyrusProgram>(options);
         }
     }
 }

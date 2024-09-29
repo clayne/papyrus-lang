@@ -1,6 +1,6 @@
 import { RequestType } from 'vscode-languageclient';
 
-export interface ProjectInfosParams {}
+export interface ProjectInfosParams { }
 
 export interface ProjectInfoScript {
     identifier: string;
@@ -11,6 +11,7 @@ export interface ProjectInfoSourceInclude {
     name: string;
     fullPath: string;
     isImport: boolean;
+    isRemote: boolean;
     scripts: ProjectInfoScript[];
 }
 

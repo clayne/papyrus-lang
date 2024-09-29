@@ -132,6 +132,7 @@ export class LanguageClientHost implements ILanguageClientHost, Disposable {
                 ambientProjectName: 'Creation Kit',
                 defaultScriptSourceFolder: this._creationKitInfo.config.Papyrus?.sScriptSourceFolder,
                 defaultAdditionalImports: this._creationKitInfo.config.Papyrus?.sAdditionalImports,
+                remotesInstallPath: await this._pathResolver.getPyroRemPath()
             };
 
             this._outputChannel.appendLine(`Creating Language Client instance with options:`);

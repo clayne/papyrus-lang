@@ -18,11 +18,15 @@
   "features": {
     "skyrim": {
       "description": "Add deps for Skyrim",
-      "dependencies": ["commonlibsse-ng"]
+      "dependencies": [
+        "commonlibsse-ng"
+      ]
     },
     "fallout4": {
       "description": "Add deps for Fallout 4",
-      "dependencies": ["commonlibf4"]
+      "dependencies": [
+        "commonlibf4"
+      ]
     }
   },
   "overrides": [
@@ -40,8 +44,11 @@
     },
     {
       "name": "commonlibf4",
-      "version": "2023.1.5"
+      "version": "2024.5.4"
+    },
+    {
+      "name": "fmt",
+      "version": "10.2.1#2"
     }
-  ],
-  "builtin-baseline": "a7b6122f6b6504d16d96117336a0562693579933"
+  ]
 }

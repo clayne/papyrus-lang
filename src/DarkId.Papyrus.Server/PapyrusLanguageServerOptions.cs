@@ -6,6 +6,7 @@ namespace DarkId.Papyrus.Server
     {
         public string FlagsFileName { get; set; }
         public string AmbientProjectName { get; set; }
+        public string RemotesInstallPath { get; set; }
         public CreationKitConfig DefaultCreationKitConfig { get; set; }
         public CreationKitIniLocations IniLocations { get; set; }
     }

@@ -32,6 +32,12 @@ namespace DarkId.Papyrus.LanguageService.Program
             return this;
         }
 
+        public ProgramOptionsBuilder WithRemotesInstallPath(string remotesPath)
+        {
+            _options.RemotesInstallPath = remotesPath;
+            return this;
+        }
+
         public ProgramOptions Build()
         {
             return _options;

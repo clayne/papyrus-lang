@@ -15,7 +15,7 @@ jobs:
       - name: git credentials
         uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
-          token: '${{ secrets.GH_TOKEN }}'
+          token: '${{ secrets.GITHUB_TOKEN }}'
           global: true
 
       - name: Checkout
@@ -92,7 +92,7 @@ jobs:
         run: |
           dotnet cake
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
           # TODO: Rename this stuff for clarity once release build artifacts are being created
           # TODO: Cleanup workflows for various event types in general

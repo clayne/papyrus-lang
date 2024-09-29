@@ -34,6 +34,7 @@
       <Private>false</Private>
       <HintPath>../../dependencies/compilers/Fallout4/PCompiler.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
 
   <ItemGroup>

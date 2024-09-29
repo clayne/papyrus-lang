@@ -50,13 +50,12 @@ namespace DarkId.Papyrus.Server.Features
                         Name = p.Name,
                         SourceIncludes = new Container<ProjectInfoSourceInclude>(p.Sources != null ? p.Sources.Select(include =>
                         {
-                            var name = !string.IsNullOrEmpty(include.Key.Path) ? Path.GetFileName(include.Key.Path) : "Scripts";
-
                             return new ProjectInfoSourceInclude()
                             {
-                                Name = name,
+                                Name = include.Key.Name,
                                 FullPath = include.Key.Path,
                                 IsImport = include.Key.IsImport,
+                                IsRemote = include.Key.IsRemote,
                                 Scripts = new Container<ProjectInfoScript>(include.Value.Select(script => new ProjectInfoScript()
                                 {
                                     Identifier = script.Key,
