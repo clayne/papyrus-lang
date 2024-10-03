@@ -600,7 +600,7 @@
         "compile": "webpack --mode development",
         "compile:release": "webpack --mode production",
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
-        "generate-version-number": "ts-node ./scripts/generate-version-number.ts",
+        "generate-version-number": "ts-node ./scripts/generate-version-number.mjs",
         "semantic-release": "npm run copy-license && npm generate-changelog && semantic-release",
         "generate-changelog": "npm version %VERSION% && conventional-changelog -r 0 --preset conventionalcommits -o CHANGELOG.md && npm version 0.0.0",
         "lint": "eslint ."

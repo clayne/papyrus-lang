@@ -1,6 +1,5 @@
-import semanticRelease from 'semantic-release';
-
 async function getVersionFromSemanticRelease() {
+    const { default: semanticRelease } = await import('semantic-release');
     return await semanticRelease(
         {
             dryRun: true,
