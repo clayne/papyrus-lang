@@ -279,7 +279,12 @@ Task("build-debugger")
 Task("build")
     .Does(() =>
     {
-        var assemblyVersion = version + ".0";
+        var parsedVersion = System.Version.Parse(version);
+
+        var patch = parsedVersion.Build & 0xFFFF0000;
+        var build = parsedVersion.Build & 0x0000FFFF;
+        
+        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + patch.ToString() + "." + build.ToString();
         Information("Assembly version: " + assemblyVersion);
 
         // TODO: Do release builds when running CI.
