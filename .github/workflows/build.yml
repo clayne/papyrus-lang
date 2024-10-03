@@ -3,7 +3,7 @@ name: "Build"
 on:
   push:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       - name: git credentials
         uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
+          token: "${{ secrets.GITHUB_TOKEN }}"
           global: true
 
       - name: Checkout
@@ -62,7 +62,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Get npm cache directory
         id: npm-cache-dir
