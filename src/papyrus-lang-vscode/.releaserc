@@ -10,15 +10,12 @@
     "plugins": [
         "@semantic-release/commit-analyzer",
         "@semantic-release/release-notes-generator",
-        "@semantic-release/changelog",
-        "@semantic-release/git",
         "@semantic-release/github"
     ],
     "verifyConditions": [
         "@semantic-release/github"
     ],
     "prepare": [
-        "@semantic-release/changelog",
         "@semantic-release/git",
         {
             "path": "@semantic-release/exec",
@@ -32,7 +29,10 @@
         },
         {
             "path": "@semantic-release/github",
-            "assets": "papyrus-lang-vscode.vsix"
+            "assets": [
+                "CHANGELOG.md",
+                "papyrus-lang-vscode.vsix"
+            ]
         }
     ]
 }
