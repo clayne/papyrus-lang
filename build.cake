@@ -258,8 +258,8 @@ Task("build-debugger")
     {
         var parsedVersion = System.Version.Parse(version);
 
-        var patch = parsedVersion.Build & 0xFFFF0000;
-        var build = parsedVersion.Build & 0x0000FFFF;
+        var patch = Math.Max((parsedVersion.Build & 0xFFFF0000) - 1, 0);
+        var build = Math.Max((parsedVersion.Build & 0x0000FFFF) - 1, 0);
 
         MSBuild(debuggerSolution, new MSBuildSettings()
         {
@@ -281,8 +281,8 @@ Task("build")
     {
         var parsedVersion = System.Version.Parse(version);
 
-        var patch = parsedVersion.Build & 0xFFFF0000;
-        var build = parsedVersion.Build & 0x0000FFFF;
+        var patch = Math.Max((parsedVersion.Build & 0xFFFF0000) - 1, 0);
+        var build = Math.Max((parsedVersion.Build & 0x0000FFFF) - 1, 0);
         
         var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + patch.ToString() + "." + build.ToString();
         Information("Assembly version: " + assemblyVersion);
