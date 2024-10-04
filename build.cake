@@ -100,11 +100,9 @@ Task("get-version")
         {
             // Generate a correctly sortable and valid semver based on the current date and time.
             var now = DateTime.UtcNow;
-            var secondOfDay = (((now.Hour * 60) + now.Minute) * 60) + now.Second;
+            var minuteOfDay = now.Hour * 60 + now.Minute;
 
-            // Adding 200 due to the previous incorrect versioning scheme that, while invalid, may still be sorted by
-            // something (VS marketplace, maybe? Don't really feel like finding out.)
-            version = $"{now.Year}.{now.DayOfYear + 200}.{secondOfDay}";
+            version = $"{now.Year}.{now.DayOfYear + 300}.{minuteOfDay}";
 
             return;
         }
@@ -258,9 +256,6 @@ Task("build-debugger")
     {
         var parsedVersion = System.Version.Parse(version);
 
-        var patch = Math.Max((parsedVersion.Build & 0xFFFF0000) - 1, 0);
-        var build = Math.Max((parsedVersion.Build & 0x0000FFFF) - 1, 0);
-
         MSBuild(debuggerSolution, new MSBuildSettings()
         {
             PlatformTarget = PlatformTarget.x64,
@@ -269,8 +264,8 @@ Task("build-debugger")
             {
                 { "VersionMajor", new List<string>(){ parsedVersion.Major.ToString() } },
                 { "VersionMinor", new List<string>(){ parsedVersion.Minor.ToString() } },
-                { "VersionPatch", new List<string>(){ patch.ToString() } },
-                { "VersionBuild", new List<string>(){ build.ToString() } }
+                { "VersionPatch", new List<string>(){ parsedVersion.Patch.ToString() } },
+                { "VersionBuild", new List<string>(){ "0" } }
             }
         });
 
@@ -281,10 +276,7 @@ Task("build")
     {
         var parsedVersion = System.Version.Parse(version);
 
-        var patch = Math.Max((parsedVersion.Build & 0xFFFF0000) - 1, 0);
-        var build = Math.Max((parsedVersion.Build & 0x0000FFFF) - 1, 0);
-        
-        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + patch.ToString() + "." + build.ToString();
+        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + parsedVersion.patch.ToString() + ".0";
         Information("Assembly version: " + assemblyVersion);
 
         // TODO: Do release builds when running CI.
