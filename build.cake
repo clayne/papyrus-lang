@@ -276,7 +276,7 @@ Task("build")
     {
         var parsedVersion = System.Version.Parse(version);
 
-        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + parsedVersion.patch.ToString() + ".0";
+        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + parsedVersion.Patch.ToString() + ".0";
         Information("Assembly version: " + assemblyVersion);
 
         // TODO: Do release builds when running CI.
