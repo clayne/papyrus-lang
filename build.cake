@@ -264,7 +264,7 @@ Task("build-debugger")
             {
                 { "VersionMajor", new List<string>(){ parsedVersion.Major.ToString() } },
                 { "VersionMinor", new List<string>(){ parsedVersion.Minor.ToString() } },
-                { "VersionPatch", new List<string>(){ parsedVersion.Revision.ToString() } },
+                { "VersionPatch", new List<string>(){ parsedVersion.Build.ToString() } },
                 { "VersionBuild", new List<string>(){ "0" } }
             }
         });
@@ -276,7 +276,7 @@ Task("build")
     {
         var parsedVersion = System.Version.Parse(version);
 
-        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + parsedVersion.Revision.ToString() + ".0";
+        var assemblyVersion = parsedVersion.Major.ToString() + "." + parsedVersion.Minor.ToString() + "." + parsedVersion.Build.ToString() + ".0";
         Information("Assembly version: " + assemblyVersion);
 
         // TODO: Do release builds when running CI.
